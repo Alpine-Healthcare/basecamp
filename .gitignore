@@ -1,9 +1,13 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+.yalc/
 # dependencies
 /node_modules
+/node-graph-gui/build
+/node-graph-gui/node_modules/
 /.pnp
 .pnp.js
+/basecamp/node_modules
 
 # testing
 /coverage
