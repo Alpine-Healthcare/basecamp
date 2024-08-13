@@ -1,0 +1,92 @@
+{
+  "nodes": [
+    {
+      "key": "UserAccount",
+      "label": "UserAccount",
+      "tag": "Access",
+      "URL": "https://en.wikipedia.org/wiki/Cytoscape",
+      "cluster": "1",
+      "x": 0,
+      "y": 0,
+      "score": 0.00006909602204225056
+    },
+    {
+      "key": "AccessPackage",
+      "label": "AccessPackage",
+      "tag": "Access",
+      "URL": "https://en.wikipedia.org/wiki/Microsoft%20Excel",
+      "cluster": "1",
+      "x": -857.2847900390625,
+      "y": -749.7734375,
+      "score": 0.0018317394731443256
+    },
+    {
+      "key": "DataManifest",
+      "label": "DataManifest",
+      "tag": "Data",
+      "URL": "https://en.wikipedia.org/wiki/Gephi",
+      "cluster": "2",
+      "x": 1243.4423828125,
+      "y": 249.0428466796875,
+      "score": 0.0010242079745792347
+    },
+    {
+      "key": "TreatmentManifest",
+      "label": "TreatmentManifest",
+      "tag": "Treatment",
+      "URL": "https://en.wikipedia.org/wiki/Gephi",
+      "cluster": "0",
+      "x": 343.4423828125,
+      "y": -749.0428466796875,
+      "score": 0.0010242079745792347
+    },
+    {
+      "key": "Treatment_Weight",
+      "label": "Treatment_Weight",
+      "tag": "Treatment",
+      "URL": "https://en.wikipedia.org/wiki/Gephi",
+      "cluster": "0",
+      "x": 43.4423828125,
+      "y": -2000.0428466796875,
+      "score": 0.0010242079745792347
+    },
+    {
+      "key": "Treatment_RunningCoach",
+      "label": "Treatment_Running",
+      "tag": "Treatment",
+      "URL": "https://en.wikipedia.org/wiki/Gephi",
+      "cluster": "0",
+      "x": 1243,
+      "y": -2000.0428466796875,
+      "score": 0.0010242079745792347
+    },
+    {
+      "key": "Treatment_RunningCoach_Binary",
+      "label": "Treatment_Binary",
+      "tag": "Treatment",
+      "URL": "https://en.wikipedia.org/wiki/Gephi",
+      "cluster": "0",
+      "x": 1243,
+      "y": -3000.0428466796875,
+      "score": 0.0010242079745792347
+    }
+  ],
+  "edges": [
+    ["UserAccount", "AccessPackage"],
+    ["UserAccount", "TreatmentManifest"],
+    ["UserAccount", "DataManifest"],
+    ["TreatmentManifest", "Treatment_Weight"],
+    ["TreatmentManifest", "Treatment_RunningCoach"],
+    ["Treatment_RunningCoach", "Treatment_RunningCoach_Binary"]
+  ],
+  "clusters": [
+    { "key": "0", "color": "#6c3e81", "clusterLabel": "Treatments" },
+    { "key": "1", "color": "#666666", "clusterLabel": "Access" },
+    { "key": "2", "color": "#666666", "clusterLabel": "Data" }
+  ],
+  "tags": [
+    { "key": "Treatment", "image": "method.svg" },
+    { "key": "Access", "image": "person.svg" },
+    { "key": "Data", "image": "tool.svg" }
+  ]
+}
