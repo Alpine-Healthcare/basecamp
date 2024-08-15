@@ -95,10 +95,10 @@
       font-size: 5rem;
       bottom: 10px;
       font-family: 'Montserrat', sans-serif;
-      width: 500px;
+      width: 900px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       align-self: center;
     }
 
@@ -124,9 +124,11 @@
     .mobile {
       display: none;
     }
-      p {
-        width: 400px;
-      }
+
+    li {
+      font-size: 1rem;
+      list-style-type: none;
+    }
 
     @media (max-width: 500px) {
       body {
@@ -185,98 +187,10 @@
     }
   </style>
   <script>
-    
-    const serverUrl = "http://localhost:8000"
-    //const serverUrl = "https://network.alpine.healthcare/api"
 
-    async function register() {
-      document.getElementById('register').style.display = 'none';
-      document.getElementById('start').style.display = 'none';
-      setMessage('Registration in progess, authenticating passkey', true)
-
-      try {
-        const registrationOptions = await fetch(serverUrl + '/auth/register/options', {
-          method: 'POST', // HTTP method
-          headers: {
-            'Content-Type': 'application/json' // Content type
-          },
-        })
-        const registrationOptionsParsed = JSON.parse(await registrationOptions.json())
-        const regResp = await SimpleWebAuthnBrowser.startRegistration(registrationOptionsParsed);
-
-        setMessage('Registration in progess, adding user to ipfs', true)
-        const verificationResp = await fetch(
-          serverUrl + '/auth/register/verify',
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              registrationResponse: JSON.stringify(regResp),
-              id : registrationOptionsParsed["user"]["name"]
-            })
-          }
-        );
-
-        //window.location.href = "alpinehealth://";
-        setMessage('Successfully register to the Alpine Network.', true)
-      } catch (err) {
-        setMessage(
-          'Registration failed',
-          false 
-        )
-        throw new Error(err);
-      }
-    }
-
-    async function startSession() {
-      document.getElementById('register').style.display = 'none';
-      document.getElementById('start').style.display = 'none';
-      setMessage('Session starting', true)
-      const verificationId = crypto.randomUUID();
-
-      try {
-        const verifyOptions = await fetch(serverUrl + '/auth/options?verificationId=' + verificationId)
-
-        const verifyOptionsParsed = JSON.parse(await verifyOptions.json())
-        const verificationData = await SimpleWebAuthnBrowser.startAuthentication(verifyOptionsParsed);
-
-        // POST the response to the endpoint that calls
-        const verificationResp = await fetch(serverUrl + '/auth/verify', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-            body: JSON.stringify({
-              authenticationCredentialJson: verificationData,
-              verificationId : verificationId 
-            })
-        });
-
-
-        const verificationJSON = await verificationResp.json();
-        const accessPackageEncoded = verificationJSON
-
-        setMessage('Session successfully started', true)
-
-        window.location.href = `alpinehealth://(tabs)?accessPackage=${accessPackageEncoded}`;
-      } catch (error) {
-        setMessage('Session start failed', false)
-        throw error;
-      }
-    }
-
-    function setMessage(message, isSuccess) {
-      document.getElementById('message').style.color = isSuccess ? "green" : "red";
-      document.getElementById('message').innerText = message;
-    }
-
-    function test(){
-      window.location.href = "alpinehealth://(tabs)?accessPackage=test";
-    }
 
   </script>
+  <script src="./src/renderer.js"></script>
 </head>
 
   <body>
@@ -285,6 +199,8 @@
         <div>
           <button onclick="" type="button" class="moving-color-button">Runnning PDOS Compute Node</button>
         </div>
+        <ul id="log" style="margin-block-start:10px; padding-inline-start: 0; overflow: auto;">
+        </ul>
       </div>
     </div>
   </body>
