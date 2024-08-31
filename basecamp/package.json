@@ -8,6 +8,8 @@
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
+    "make-linux": "electron-forge make --platform linux --arch=armv7l",
+    "make-basecamp-node": "electron-forge make --arch=armv7l --targets=@electron-forge/maker-deb",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx ."
   },
@@ -28,7 +30,6 @@
     "eslint-plugin-import": "^2.25.0",
     "mobx": "6.0.4",
     "ts-node": "^10.0.0",
-    "typescript": "~4.5.4",
     "vite": "^5.0.12"
   },
   "keywords": [],
@@ -38,7 +39,11 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@types/node-schedule": "^2.1.7",
     "axios": "^1.7.4",
-    "electron-squirrel-startup": "^1.0.1"
+    "electron-squirrel-startup": "^1.0.1",
+    "node-schedule": "^2.1.1",
+    "openai": "^4.56.0",
+    "typescript": "~4.5.4"
   }
 }

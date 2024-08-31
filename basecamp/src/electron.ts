@@ -7,7 +7,6 @@ if (require('electron-squirrel-startup')) {
 }
 
 
-
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -31,7 +30,7 @@ const createWindow = () => {
 };
 
 
-export const onLoad: any[] = []
+export const onWindowLoad: any[] = []
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -39,13 +38,13 @@ export const onLoad: any[] = []
 app.on('ready', async () => {
   const window = createWindow()
 
-  //TODO: have a dom content loaded event in stead of this wait
+  //FIXME: have a dom content loaded event in stead of this wait
   setTimeout(async () => {
-    for (const func of onLoad) {
-      console.log("func: ", func)
+    for (const func of onWindowLoad) {
       await (func as any)(window)
     }
   }, 500)
+
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
