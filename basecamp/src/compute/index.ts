@@ -9,8 +9,6 @@ import schedule from "node-schedule"
 import * as ts from "typescript";
 import LLM from "./llm";
 
-
-
 export let userList: UserList = []
 
 type UserScheduledJobs = { [cron: string] :  Array<() => Promise<void>>}
@@ -27,8 +25,8 @@ const acquireMutexAndRunPDOS = async (user: User, pdosFunction: (user: User) => 
   }
 
   new Core(pdosConfig)
-  await pdos().start(undefined)
-  await pdos().modules.auth.setAccessPackage((userInfo as any).hash_id)
+  await pdos().start()
+  await pdos().modules.auth.setCredentialId(credential_id)
 
   return new Promise<void>((resolve, reject) => {
     autorun(async () => {
@@ -95,7 +93,7 @@ const runTherapyJob = async (
     const data: { [key: string]: any} = {}
 
     for (let dataName of dataRequest) {
-      const dataGroupNode = await pdos().stores.userAccount.edges.e_out_DataManifest.getDataGroup(dataName)
+      const dataGroupNode = await pdos().root.userAccount.edges.e_out_DataManifest.getDataGroup(dataName)
 
       if (dataGroupNode) {
         data[dataName] = dataGroupNode._rawNode.records
@@ -115,9 +113,7 @@ const runTherapyJob = async (
   const retVal = await bin.main(api, requestedData);
 
 
-  // Update User node
-  (userRootNode as any).edges.e_out_Inbox.addMessage(retVal.message);
-
+  (userRootNode as any).edges.e_out_Inbox.addMessage("This is a test");
 }
 
 const scheduleTherapyJobsForUser = async (user: User) => {
@@ -126,8 +122,8 @@ const scheduleTherapyJobsForUser = async (user: User) => {
 
     for (let treatmentBinary of treatmentBinaries) {
 
-      const treatmentBinaryFrequency = treatmentBinary.frequency
-      //const treatmentBinaryFrequency = '* * * * *' 
+      //const treatmentBinaryFrequency = treatmentBinary.frequency
+      const treatmentBinaryFrequency = '* * * * *' 
 
       const treatmentType = treatmentBinary.name
 
@@ -141,6 +137,7 @@ const scheduleTherapyJobsForUser = async (user: User) => {
 
       scheduledJobs[credential_id][treatmentBinaryFrequency].push(async () => {
         CommInstance.send("Running therapy job for: " + credential_id + "for treatment type: " + treatmentType)
+        console.log("pdos: ", pdos().stores)
         await acquireMutexAndRunPDOS(user, () => runTherapyJob(pdos().stores.userAccount,treatmentBinary.binary ))
         CommInstance.send("Finished therapy job for: " + credential_id + "for treatment type: " + treatmentType)
       })
@@ -149,7 +146,7 @@ const scheduleTherapyJobsForUser = async (user: User) => {
     }
 
     Object.keys(scheduledJobs[credential_id]).forEach((cron) => {
-      schedule.scheduleJob('* * * * *', async () => {
+      schedule.scheduleJob(cron, async () => {
         const jobs = scheduledJobs[credential_id][cron]
 
         for (let i = 0; i < jobs.length; i++) {

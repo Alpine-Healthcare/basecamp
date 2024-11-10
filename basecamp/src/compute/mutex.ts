@@ -36,7 +36,7 @@ export const acquireMutexForUser = async (credential_id: string): Promise<boolea
     const timestampEpoch = new Date(timestamp).getTime()
     const nowEpoch = new Date().getTime() 
 
-    if (nowEpoch - timestampEpoch > 30000) {
+    if (nowEpoch - timestampEpoch > 3000) {
       CommInstance.send("Reseting mutex for locked for user: " + credential_id + "") 
       await releaseMutex(credential_id)
       CommInstance.send("Mutex unlocked for user: " + credential_id + "") 

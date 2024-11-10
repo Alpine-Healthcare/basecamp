@@ -5,6 +5,9 @@
 /node_modules
 /node-graph-gui/build
 /node-graph-gui/node_modules/
+/pdos-view/node_modules/
+/pdos-view/build/
+/pdos-view/dist/
 /.pnp
 .pnp.js
 /basecamp/node_modules

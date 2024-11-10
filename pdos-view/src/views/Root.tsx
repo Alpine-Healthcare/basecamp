@@ -18,6 +18,23 @@ import SearchField from "./SearchField";
 import Mountains from "../images/mountains.webp";
 import Logo from "../images/logo.png";
 
+import pdos, { Core } from "@alpinehealthcare/pdos";
+import { getTreeGraphSnapshot } from "../pdos";
+import { CLUSTERS } from "../pdos";
+import { TAGS } from "../pdos";
+
+new Core({
+  env: "production",
+  gatewayURL: "http://localhost:8000",
+  modules: {
+    auth: {},
+  },
+  test: {
+    initCredentialId: "vdCXfgZ9zN2fgjF9nTwIbg"
+  }
+});
+
+pdos().start()
 
 const Root: FC = () => {
   const [showContents, setShowContents] = useState(false);
@@ -50,17 +67,26 @@ const Root: FC = () => {
 
   // Load data on mount:
   useEffect(() => {
-    fetch(`./dataset.json`)
-      .then((res) => res.json())
-      .then((dataset: Dataset) => {
-        setDataset(dataset);
-        setFiltersState({
-          clusters: mapValues(keyBy(dataset.clusters, "key"), constant(true)),
-          tags: mapValues(keyBy(dataset.tags, "key"), constant(true)),
-        });
-        requestAnimationFrame(() => setDataReady(true));
-      });
-  }, []);
+
+    if (!pdos().started) return;
+
+    setDataset({
+      ...getTreeGraphSnapshot(pdos().stores.userAccount),
+      clusters: CLUSTERS,
+      tags: TAGS,
+    })
+    setFiltersState({
+      clusters: mapValues(keyBy(CLUSTERS, "key"), constant(true)),
+      tags: mapValues(keyBy(TAGS, "key"), constant(true)),
+    });
+
+    setDataReady(true);
+
+  }, [pdos().started]);
+
+  if (!pdos().started) {
+    return <h2>loading pdos...</h2>;
+  }
 
   if (!dataset) return null;
 
