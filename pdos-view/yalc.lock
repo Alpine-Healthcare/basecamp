@@ -1,9 +1,0 @@
-{
-  "version": "v1",
-  "packages": {
-    "@alpinehealthcare/pdos": {
-      "signature": "2b1e81e3700fdb9fcbc539b4d82bf4a8",
-      "file": true
-    }
-  }
-}
