@@ -1,11 +1,10 @@
 import * as ts from "typescript";
 import LLM from "../ai/llm";
 
-import * as pdosImport from "@alpinehealthcare/pdos";
+import { pdos } from "@alpinehealthcare/pdos";
 import binary from "./binary";
 import { CommInstance } from "../../comm";
 import axios from "axios";
-const pdos = pdosImport.default.default
 
 const useTestExecutionBinary = true
 const getExecutionBinary = async (therapyBinaryNode: any) => {

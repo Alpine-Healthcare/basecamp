@@ -1,12 +1,8 @@
 import { Comm, CommInstance } from "../comm";
-import { UserList, getUsers } from "./accounts/getUsers";
+import { UserList } from "./accounts/getUsers";
 import ethers from "ethers"
-import * as pdosImport from "@alpinehealthcare/pdos";
-const pdos = pdosImport.default.default
-const Core = pdosImport.Core
-import { Cron } from "croner";
+import { pdos, Core, actions } from "@alpinehealthcare/pdos";
 import { runTreatmentForUser } from "./treatment/runTreatmentForUser";
-const actions = pdosImport.actions
 
 import { config } from 'dotenv'
 config({
@@ -42,7 +38,7 @@ export const runCompute = async (mainWindow: any) => {
   });
 
   await pdos().start()
-  await pdos().modules.auth.initializeWalletUserWithPrivateKey()
+  await pdos().modules?.auth?.initializeWalletUserWithPrivateKey()
   CommInstance.send("Running compute node with public address: " + pdos().modules.auth.publicKey)
 
   const userAddresses = await pdos().modules.auth.getUsersForComputeNode(pdos().modules.auth.publicKey)
