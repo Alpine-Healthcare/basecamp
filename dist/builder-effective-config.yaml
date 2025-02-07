@@ -1,0 +1,17 @@
+directories:
+  output: dist
+  buildResources: build
+appId: com.alpine.healthcare
+productName: Alpine
+mac:
+  category: public.app-category.utilities
+  target:
+    - dmg
+    - zip
+  hardenedRuntime: false
+  sign: false
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+files: []
+electronVersion: 31.3.1

@@ -25,7 +25,7 @@ export const runCompute = async (mainWindow: any) => {
   new Comm(mainWindow)
 
   new Core({
-    env: "sepolia",
+    env: "marigold",
     context: {
       isComputeNode: true,
       gatewayURL

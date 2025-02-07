@@ -7,15 +7,33 @@
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-forge make",
+    "make": "electron-forge make --platform=darwin",
     "make-linux": "electron-forge make --platform linux --arch=armv7l",
     "make-basecamp-node": "electron-forge make --arch=armv7l --targets=@electron-forge/maker-deb",
     "publish": "electron-forge publish",
-    "lint": "eslint --ext .ts,.tsx ."
+    "lint": "eslint --ext .ts,.tsx .",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.alpine.healthcare",
+    "productName": "Alpine",
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "hardenedRuntime": false,
+      "sign": false,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    }
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",
     "@electron-forge/maker-deb": "^7.4.0",
+    "@electron-forge/maker-dmg": "^7.6.1",
     "@electron-forge/maker-rpm": "^7.4.0",
     "@electron-forge/maker-squirrel": "^7.4.0",
     "@electron-forge/maker-zip": "^7.4.0",
@@ -27,6 +45,7 @@
     "@typescript-eslint/parser": "^5.0.0",
     "dotenv": "^16.4.7",
     "electron": "31.3.1",
+    "electron-builder": "^25.1.8",
     "eslint": "^8.0.1",
     "eslint-plugin-import": "^2.25.0",
     "mobx": "6.0.4",
@@ -44,6 +63,7 @@
     "@types/node-schedule": "^2.1.7",
     "axios": "^1.7.4",
     "croner": "^9.0.0",
+    "electron-installer-dmg": "^5.0.1",
     "electron-squirrel-startup": "^1.0.1",
     "ethers": "^6.13.5",
     "node-schedule": "^2.1.1",
