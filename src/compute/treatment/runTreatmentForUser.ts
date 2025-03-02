@@ -1,7 +1,7 @@
 import * as ts from "typescript";
 import LLM from "../ai/llm";
 
-import { pdos } from "@alpinehealthcare/pdos";
+import { pdos, actions } from "@alpinehealthcare/pdos";
 import binary from "./binary";
 import { CommInstance } from "../../comm";
 import axios from "axios";
@@ -20,45 +20,37 @@ const getExecutionBinary = async (therapyBinaryNode: any) => {
 
 const getRequestedData = async (dataRequest: string[]) => {
   const data: { [key: string]: any} = {}
-
-  for (let dataName of dataRequest) {
-    const dataGroupNode = await pdos().tree.userAccount.edges.e_out_DataManifest.getDataGroup(dataName)
-
-    if (dataGroupNode) {
-      data[dataName] = dataGroupNode._rawNode.records
-    }
-  }
-
-  const requestedDataParsed: any = {}
-
-  Object.entries(data).map(([key, value]: any) => {
-    requestedDataParsed[key] = Object.entries(value).map(([date, record]) => {
-      return {
-        data: new Date(parseInt(date)),
-        record,
+  try {
+    for (let dataName of dataRequest) {
+      const dataGroupNode = await pdos().tree.userAccount.edges.e_out_DataManifest.getDataGroup(dataName)
+  
+      if (dataGroupNode) {
+        data[dataName] = dataGroupNode._rawNode.records
       }
+    }
+  
+    const requestedDataParsed: any = {}
+  
+    Object.entries(data).map(([key, value]: any) => {
+      requestedDataParsed[key] = Object.entries(value).map(([date, record]) => {
+        return {
+          data: new Date(parseInt(date)),
+          record,
+        }
+      })
     })
-  })
+  } catch (e) {
+    console.log("unable to fetch any data")
+  }
+  
 
   return data
 }
 
-const messages = [ 
-  {
-    sender: "Running Coach",
-    message: "Try to run 3 miles either today or tomorrow to stay on track"
-  },
-  {
-    sender: "Weight Watcher",
-    message: "Looking good this week! You've been averaging 2100 calories a day which is great. Paired with your activity so far you could plan for a cheat day this Friday!"
-  }
-]
-
 export const handleBinaryOutput = async (treatmentNode: any, retVal: any) => {
+  console.log("adding mesage", treatmentNode._rawNode.data.treatmentName, retVal.message)
+  await actions.inbox.add(treatmentNode._rawNode.data.treatmentName, retVal.message);
   await treatmentNode.addInstance([retVal.message])
-  for (let i = 0; i< messages.length; i++) { 
-    await pdos().tree.root.edges.e_out_Inbox.addMessage(messages[i].sender, messages[i].message);
-  }
 }
 
 export const runTreatmentForUser = async (
@@ -70,6 +62,7 @@ export const runTreatmentForUser = async (
     CommInstance.send(`[${address}] Compiling and running execution binary`)
 
     const fetchedBinary = await getExecutionBinary(treatmentBinary)
+    /*eslint no-eval: "error"*/
     const bin = eval(ts.transpile(fetchedBinary));
 
     const dataManifest = treatmentBinary._rawNode.data_manifest
@@ -85,6 +78,7 @@ export const runTreatmentForUser = async (
 
     CommInstance.send(`[${address}] Execution binary run successful`)
   }catch(e) {
+    console.log("error: ", e);
     CommInstance.send(`[${address}] Execution binary run failed`)
   }
 }

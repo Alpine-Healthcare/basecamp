@@ -3,6 +3,7 @@ import { UserList } from "./accounts/getUsers";
 import ethers from "ethers"
 import { pdos, Core, actions } from "@alpinehealthcare/pdos";
 import { runTreatmentForUser } from "./treatment/runTreatmentForUser";
+import * as LitJsSdk from '@lit-protocol/lit-node-client-nodejs';
 
 import { config } from 'dotenv'
 config({
@@ -24,7 +25,7 @@ export const runCompute = async (mainWindow: any) => {
     env: "marigold",
     context: {
       isComputeNode: true,
-      gatewayURL
+      gatewayURL: "https://network.alpine.healthcare/api"
     },
     modules: {
       auth: {
@@ -34,18 +35,32 @@ export const runCompute = async (mainWindow: any) => {
         }),
         privateKey: PRIVATE_KEY
       },
+      encryption: {
+        enabled: true,
+      }
     }
   });
 
-  await pdos().start()
+  await pdos().start({
+    encryption: {
+      litNodePackage: LitJsSdk.LitNodeClientNodeJs
+    }
+  })
   await pdos().modules?.auth?.initializeWalletUserWithPrivateKey()
   CommInstance.send("Running compute node with public address: " + pdos().modules.auth.publicKey)
 
   const userAddresses = await pdos().modules.auth.getUsersForComputeNode(pdos().modules.auth.publicKey)
 
   for (let address of userAddresses) {
+    if (address !== "0x6309Bd836Fd8FD103742bf3b87A09a1a016eA959") {
+      continue 
+    }
     const pdosRoot = await pdos().modules.auth.getPDOSRoot(address)
-    await pdos().tree.root.init(pdosRoot)
+    const accessPackage = await pdos().modules.auth.getAccessPackageFromRoot(pdosRoot)
+    await pdos().modules.encryption?.setAccessPackage(accessPackage);
+    await pdos().tree.root.init(pdosRoot);
+    pdos().modules.auth.setDelegatedPublicKey(address)
+
     const activeTreatments = await actions.treatments.getActiveTreatments()
 
     if (!activeTreatments.length) {
@@ -53,24 +68,10 @@ export const runCompute = async (mainWindow: any) => {
     }
 
     for (let treatment of activeTreatments) {
-
-      const run = async () => {
-        const pdosRoot = await pdos().modules.auth.getPDOSRoot(address)
-      
-        await pdos().tree.root.init(pdosRoot)
-
-        const treatmentBinary = await actions.treatments.getTreatmentBinaryForTreatment(treatment)
-        await runTreatmentForUser(address, treatment, treatmentBinary)
-        await pdos().tree.root.syncLocalRootHash(address)
-      };
-
-      await run()
-
+      const treatmentBinary = await actions.treatments.getTreatmentBinaryForTreatment(treatment)
+      await runTreatmentForUser(address, treatment, treatmentBinary)
     }
 
-
   }
-
-
 }
 
