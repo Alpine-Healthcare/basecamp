@@ -47,16 +47,40 @@ const getRequestedData = async (dataRequest: string[]) => {
   return data
 }
 
-export const handleBinaryOutput = async (treatmentNode: any, retVal: any) => {
-  console.log("adding mesage", treatmentNode._rawNode.data.treatmentName, retVal.message)
+async function sendPushNotification(expoPushToken: string, title: string, body: string) {
+  const message = {
+    to: expoPushToken,
+    sound: 'default',
+    title: title,
+    body: body,
+  };
+
+  await fetch('https://exp.host/--/api/v2/push/send', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Accept-encoding': 'gzip, deflate',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(message),
+  });
+}
+
+export const handleBinaryOutput = async (treatmentNode: any, retVal: any, expoPushToken?: string) => {
   await actions.inbox.add(treatmentNode._rawNode.data.treatmentName, retVal.message);
   await treatmentNode.addInstance([retVal.message])
+  if (expoPushToken) {
+    const title = `${treatmentNode._rawNode.data.treatmentName} has sent you a message!`
+    const body = "Tap here to view the interaction"
+    await sendPushNotification(expoPushToken, title, body)
+  }
 }
 
 export const runTreatmentForUser = async (
   address: string,
   treatmentNode: any,
   treatmentBinary: any,
+  expoPushToken?: string
 ) => {
   try {
     CommInstance.send(`[${address}] Compiling and running execution binary`)
@@ -74,7 +98,7 @@ export const runTreatmentForUser = async (
       }
     );
 
-    await handleBinaryOutput(treatmentNode, retVal)
+    await handleBinaryOutput(treatmentNode, retVal, expoPushToken)
 
     CommInstance.send(`[${address}] Execution binary run successful`)
   }catch(e) {

@@ -18,6 +18,8 @@ export let userAddressList: UserList = []
 type UserScheduledJobs = { [cron: string] :  Array<() => Promise<void>>}
 export const scheduledJobs: { [credentialId: string]: UserScheduledJobs } = {} 
 
+const addressToRunFor = [ "0x07BD6d82E20FEC1fA4B66592B46Cba018932aDfA" ]
+
 export const runCompute = async (mainWindow: any) => {
   new Comm(mainWindow)
 
@@ -51,10 +53,8 @@ export const runCompute = async (mainWindow: any) => {
 
   const userAddresses = await pdos().modules.auth.getUsersForComputeNode(pdos().modules.auth.publicKey)
 
-  for (let address of userAddresses) {
-    if (address !== "0x6309Bd836Fd8FD103742bf3b87A09a1a016eA959") {
-      continue 
-    }
+  for (let address of addressToRunFor) {
+
     const pdosRoot = await pdos().modules.auth.getPDOSRoot(address)
     const accessPackage = await pdos().modules.auth.getAccessPackageFromRoot(pdosRoot)
     await pdos().modules.encryption?.setAccessPackage(accessPackage);
@@ -68,8 +68,12 @@ export const runCompute = async (mainWindow: any) => {
     }
 
     for (let treatment of activeTreatments) {
+      if (treatment._rawNode.data.treatmentName === "Deep Breath Work") {
+        continue
+      }
+
       const treatmentBinary = await actions.treatments.getTreatmentBinaryForTreatment(treatment)
-      await runTreatmentForUser(address, treatment, treatmentBinary)
+      await runTreatmentForUser(address, treatment, treatmentBinary, pdos().tree.root._rawNode.data.expoPushToken)
     }
 
   }
