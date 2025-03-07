@@ -50,6 +50,7 @@
     "croner": "^9.0.0",
     "electron-installer-dmg": "^5.0.1",
     "electron-squirrel-startup": "^1.0.1",
+    "ethereum-blockies-base64": "^1.0.2",
     "ethers": "^6.13.5",
     "node-schedule": "^2.1.1",
     "openai": "^4.56.0",

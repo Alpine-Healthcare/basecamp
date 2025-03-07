@@ -18,11 +18,20 @@ const getExecutionBinary = async (therapyBinaryNode: any) => {
   }
 }
 
+const convertSnakeCaseToCamelCase = (str: string) =>
+  str
+    .toLowerCase()
+    .replace(/([-_][a-z])/g, (group: string) =>
+      group.toUpperCase().replace("-", "").replace("_", ""),
+    )
+    .replace(/^./, (firstChar) => firstChar.toUpperCase());
+
 const getRequestedData = async (dataRequest: string[]) => {
   const data: { [key: string]: any} = {}
   try {
     for (let dataName of dataRequest) {
-      const dataGroupNode = await pdos().tree.userAccount.edges.e_out_DataManifest.getDataGroup(dataName)
+      console.log("dataName", dataName)
+      const dataGroupNode = await pdos().tree.userAccount.edges.e_out_DataManifest.getDataGroup(convertSnakeCaseToCamelCase(dataName))
   
       if (dataGroupNode) {
         data[dataName] = dataGroupNode._rawNode.records
@@ -67,10 +76,20 @@ async function sendPushNotification(expoPushToken: string, title: string, body: 
 }
 
 export const handleBinaryOutput = async (treatmentNode: any, retVal: any, expoPushToken?: string) => {
-  await actions.inbox.add(treatmentNode._rawNode.data.treatmentName, retVal.message);
+  const time = new Date().getSeconds()
+  const shouldClearInbox = time % 2 === 0
+  if (retVal.message) {
+    if (shouldClearInbox) {
+      await actions.inbox.clear()
+    } else {
+      await actions.inbox.add(treatmentNode._rawNode.data.treatmentName, retVal.message);
+    }
+  } else {
+    await actions.inbox.clear()
+  }
   await treatmentNode.addInstance([retVal.message])
-  if (expoPushToken) {
-    const title = `${treatmentNode._rawNode.data.treatmentName} has sent you a message!`
+  if (expoPushToken && retVal.message && !shouldClearInbox) {
+    const title = `${treatmentNode._rawNode.data.treatmentName} sent you a message`
     const body = "Tap here to view the interaction"
     await sendPushNotification(expoPushToken, title, body)
   }
