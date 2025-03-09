@@ -11,9 +11,9 @@ import path from "path"
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    icon: path.join(process.cwd(), "images", "icon.icns"),
+    icon: path.join(process.cwd(), ".", "images", "android-chrome-512x512.png"),
     extraResource: [
-      path.join(process.cwd(), "images", "icon.icns"), // Add the ICNS file as an extra resource
+      path.join(process.cwd(), ".", "images", "android-chrome-512x512.png"), // Use the Android Chrome icon
     ]
   },
   rebuildConfig: {},

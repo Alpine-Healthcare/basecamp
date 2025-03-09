@@ -14,6 +14,7 @@
   <link rel="shortcut icon" href="./favicon.ico" />
   <title>Basecamp</title>
   <script src="https://unpkg.com/@simplewebauthn/browser"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 
 
   <meta property="og:title" content="Alpine" />
@@ -28,6 +29,7 @@
   <meta property="og:video" content="URL to a video file if your content is a video" />
 
   <meta content="./public/flowers.jpeg" property="og:image">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     .moving-color-button {
       font-size: 16px;
@@ -40,6 +42,7 @@
       cursor: pointer;
       outline: none;
       margin-top: 50px;
+      -webkit-app-region: no-drag;
     }
 
     @keyframes GradientBackground {
@@ -57,11 +60,17 @@
     }
 
     body {
-      background-color: #f9f0c3;
       margin: 0;
       padding: 0;
-      overflow: hidden;
-      position: relative;
+      background-image: url('./src/mountains.webp');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Montserrat', sans-serif;
     }
 
     button {
@@ -71,15 +80,14 @@
       border-radius: 0px;
       padding: 10px;
       width: 100%;
-      border-color: black;
       background-color: #f9f0c3;
       color: black;
-      border-color: black;
+      -webkit-app-region: no-drag;
+      border: none;
     }
 
-    button::hover {
-      background-color: grey;
-      color: #f9f0c3;
+    button:hover {
+      border: 1px dashed black;
       border-color: black;
     }
 
@@ -87,21 +95,30 @@
       display: flex;
       flex-direction: column;
       position: relative;
+      width: calc(100vw - 60px);
+      height: calc(100vh - 60px);
+      justify-content: center;
+      align-items: center;
     }
 
     .logoContainer {
       z-index: 8;
-      height: 100vh;
-      font-size: 5rem;
-      bottom: 10px;
-      font-family: 'Montserrat', sans-serif;
-      width: 900px;
+      background-color: rgb(249, 240, 195);
+      border-radius: 20px;
+      width: 80%;
+      height: 80%;
+      box-shadow: 0 4px 8px rgb(0 0 0);
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
-      align-self: center;
+      -webkit-app-region: drag;
+      position: relative;
+      padding-left: 10px;
+      padding-right: 10px;
     }
 
+    .no-drag {
+      -webkit-app-region: no-drag;
+    }
 
     .links {
       display: flex;
@@ -110,15 +127,6 @@
       gap: 10px;
       transition: opacity 5s;
       justify-content: flex-end;
-    }
-
-    .mountains {
-      position: absolute;
-      right: 0;
-      width: 50vw;
-      height: 100vh;
-      object-fit: cover;
-      overflow: hidden;
     }
 
     .mobile {
@@ -130,10 +138,112 @@
       list-style-type: none;
     }
 
+    #log {
+      max-height: 50vh;
+      -webkit-app-region: no-drag;
+    }
+    
+    .logs-section {
+      display: none;
+      width: 80%;
+      text-wrap: wrap;
+      margin-top: 20px;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    .status-section {
+      display: none;
+      width: 80%;
+      text-wrap: wrap;
+      margin-top: 20px;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    .status-info {
+      display: flex;
+      flex-direction: column;
+      width: fit-content;
+    }
+
+    .logs-toggle-button {
+      background-color: #f9f0c3;
+      color: black;
+      border: none;
+      padding: 10px 20px;
+      font-weight: 500;
+      -webkit-app-region: no-drag;
+      width: 150px;
+      z-index: 10;
+      border-radius: 10px;
+    }
+
+    .status-indicator {
+      font-weight: bold;
+      z-index: 10;
+      background-color: transparent;
+      padding: 5px;
+      -webkit-app-region: no-drag;
+    }
+
+    .lottie-container {
+      -webkit-app-region: no-drag;
+      transition: all 0.5s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .lottie {
+      height: 40px;
+      width: 40px;
+    }
+
+    .qrcode-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    .qrcode {
+      padding: 10px;
+      border-radius: 10px;
+      border: 2px solid black;
+    }
+
+    .lottie-centered {
+      max-width: 400px;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 15px;
+      gap: 20px;
+      margin-right: 10px;
+    }
+
+    .content-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
     @media (max-width: 500px) {
       body {
-        overflow-y: scroll;
+        overflow-y: auto;
       }
+      
       Button {
         background-color: #f9f0c3;
         color: black;
@@ -145,26 +255,10 @@
       }
 
       .logoContainer {
-        left: 20px;
-        right: 20px;
-        position: unset;
-        height: unset;
-        padding-left: 40px;
-        padding-right: 40px;
-        padding-top: 10px;
-        padding-bottom: 20px;
-        background-color: rgb(0 0 0 / 0%);
-        transition: background-color 2s;
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-      }
-
-
-      .mountains {
-        width: 0;
-        height: 40vh;
+        width: calc(100% - 40px);
+        padding: 20px;
+        max-height: 80vh;
+        overflow-y: auto;
       }
 
       .links {
@@ -178,17 +272,118 @@
         width: 100%;
         height: 60px;
         border-radius: 0px;
-
       }
 
       p {
-        width: 80vw
+        width: 100%;
+      }
+
+      .lottie-container {
+        max-width: 200px;
+      }
+      
+      .lottie-centered {
+        max-width: 300px;
+        width: 80%;
       }
     }
   </style>
   <script>
-
-
+    function toggleLogs() {
+      const logsSection = document.getElementById('logsSection');
+      const logsButton = document.getElementById('logsToggleButton');
+      const lottieContainer = document.getElementById('lottie-animation');
+      
+      if (logsSection.style.display === 'none' || logsSection.style.display === '') {
+        logsSection.style.display = 'block';
+        logsButton.textContent = 'Hide Activity';
+        lottieContainer.style.display = 'none';
+      } else {
+        logsSection.style.display = 'none';
+        logsButton.textContent = 'Show Activity';
+        lottieContainer.style.display = 'block';
+        lottieContainer.classList.add('lottie-centered');
+      }
+    }
+    
+    function toggleStatus() {
+      const statusSection = document.getElementById('statusSection');
+      const statusButton = document.getElementById('statusToggleButton');
+      const logsSection = document.getElementById('logsSection');
+      const logsButton = document.getElementById('logsToggleButton');
+      const lottieContainer = document.getElementById('lottie-animation');
+      
+      // Hide logs section if it's visible
+      if (logsSection.style.display === 'block') {
+        logsSection.style.display = 'none';
+        logsButton.textContent = 'Activity';
+      }
+      
+      if (statusSection.style.display === 'none' || statusSection.style.display === '') {
+        statusSection.style.display = 'block';
+        statusButton.textContent = 'Hide Status';
+        lottieContainer.style.display = 'none';
+      } else {
+        statusSection.style.display = 'none';
+        statusButton.textContent = 'Status';
+        lottieContainer.style.display = 'block';
+        lottieContainer.classList.add('lottie-centered');
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      const lottieContainer = document.getElementById('lottie-animation');
+      const logsSection = document.getElementById('logsSection');
+      const statusSection = document.getElementById('statusSection');
+      const logoContainer = document.getElementById('logoContainer');
+      
+      if (lottieContainer) {
+        loadLottieAnimation('./src/animations/hotAirBalloon.json');
+        
+        logsSection.style.display = 'none';
+        statusSection.style.display = 'none';
+        lottieContainer.style.display = 'block';
+        lottieContainer.classList.add('lottie-centered');
+      }
+    });
+    
+    function loadLottieAnimation(path, container = 'lottie-animation') {
+      if (typeof lottie !== 'undefined') {
+        try {
+          const animation = lottie.loadAnimation({
+            container: document.getElementById(container),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: path
+          });
+          
+          animation.addEventListener('error', () => {
+            console.warn('Failed to load local animation, falling back to online version');
+            lottie.loadAnimation({
+              container: document.getElementById(container),
+              renderer: 'svg',
+              loop: true,
+              autoplay: true,
+              path: 'https://assets2.lottiefiles.com/packages/lf20_UJNc2t.json'
+            });
+          });
+          
+          return animation;
+        } catch (e) {
+          console.error('Error loading animation:', e);
+          return lottie.loadAnimation({
+            container: document.getElementById(container),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: 'https://assets2.lottiefiles.com/packages/lf20_UJNc2t.json'
+          });
+        }
+      } else {
+        console.error('Lottie library not loaded');
+      }
+    }
   </script>
   <script src="./src/renderer.js"></script>
 </head>
@@ -196,11 +391,38 @@
   <body>
     <div class="container">
       <div id="logoContainer" class="logoContainer">
-        <div>
-          <button onclick="" type="button" class="moving-color-button">Runnning PDOS Compute Node</button>
+        <div class="content-container">
+          <div id="logsSection" class="logs-section">
+            <ul reversed id="log" style="margin-block-start:10px; padding-inline-start: 0; overflow: auto;">
+            </ul>
+          </div>
+          <div id="statusSection" class="status-section">
+            <h3>Basecamp Node Status</h3>
+            <div class="status-info">
+              <p><strong>Public Address:</strong> <span id="nodeId">Not connected</span></p>
+              <p><strong>Status:</strong> <span id="nodeStatus">Offline</span></p>
+              <p><strong>Gateway:</strong> <span id="networkStatus">-</span></p>
+              <div id="qrcode" class="qrcode"></div>
+            </div>
+          </div>
+          <div id="lottie-animation" class="lottie-container"></div>
+          <script>
+            var appUrl = "alpinehealth://configure-compute-node";  // Replace with your app link
+            var qrCode = new QRCode(document.getElementById("qrcode"), {
+                text: appUrl,
+                width: 200,
+                height: 200,
+                colorDark: "#333333",  // Dark QR Code
+            colorLight: "#f9f0c3", // Background inside QR
+            correctLevel: QRCode.CorrectLevel.H
+            });
+        </script>
+
         </div>
-        <ul reversed id="log" style="margin-block-start:10px; padding-inline-start: 0; overflow: auto;">
-        </ul>
+        <div class="top-bar">
+          <button id="logsToggleButton" onclick="toggleLogs()" type="button" class="logs-toggle-button">Activity</button>
+          <button id="statusToggleButton" onclick="toggleStatus()" type="button" class="logs-toggle-button">Status</button>
+        </div>
       </div>
     </div>
   </body>

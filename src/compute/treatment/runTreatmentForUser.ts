@@ -2,14 +2,19 @@ import * as ts from "typescript";
 import LLM from "../ai/llm";
 
 import { pdos, actions } from "@alpinehealthcare/pdos";
-import binary from "./binary";
+import binary_sense from "./binary_sense";
+import binary_breath from "./binary_breath";
 import { CommInstance } from "../../comm";
 import axios from "axios";
 
 const useTestExecutionBinary = true
 const getExecutionBinary = async (therapyBinaryNode: any) => {
   if (useTestExecutionBinary) {
-    return binary
+    if ( therapyBinaryNode._rawNode.data.treatmentName === "Deep Breath Work") {
+      return binary_breath
+    } else {
+      return binary_sense
+    }
   } else {
     const executionBinary = await axios.get("/pdos?return_raw=True&hash=" +therapyBinaryNode._rawNode.execution_binary)
     if (!executionBinary) {
@@ -80,15 +85,29 @@ export const handleBinaryOutput = async (treatmentNode: any, retVal: any, expoPu
   const shouldClearInbox = time % 2 === 0
   if (retVal.message) {
     if (shouldClearInbox) {
-      await actions.inbox.clear()
+      //await actions.inbox.clear()
     } else {
-      await actions.inbox.add(treatmentNode._rawNode.data.treatmentName, retVal.message);
     }
+    let treatmentName = treatmentNode._rawNode.data.treatmentName
+    let message = retVal.message
+    let action = undefined
+
+    if (treatmentName === "FitSense") {
+      message = "You're doing great so far today! Try to get an additional 20g of protein in today"
+
+    }
+
+    if (treatmentName === "Deep Breath Work") {
+      action = "Start Interaction"
+    }
+
+
+      await actions.inbox.add(treatmentNode._rawNode.data.treatmentName, message, action);
   } else {
     await actions.inbox.clear()
   }
   await treatmentNode.addInstance([retVal.message])
-  if (expoPushToken && retVal.message && !shouldClearInbox) {
+  if (expoPushToken && retVal.message) {
     const title = `${treatmentNode._rawNode.data.treatmentName} sent you a message`
     const body = "Tap here to view the interaction"
     await sendPushNotification(expoPushToken, title, body)
@@ -104,7 +123,7 @@ export const runTreatmentForUser = async (
   try {
     CommInstance.send(`[${address}] Compiling and running execution binary`)
 
-    const fetchedBinary = await getExecutionBinary(treatmentBinary)
+    const fetchedBinary = await getExecutionBinary(treatmentNode)
     /*eslint no-eval: "error"*/
     const bin = eval(ts.transpile(fetchedBinary));
 

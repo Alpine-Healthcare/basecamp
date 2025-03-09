@@ -9,8 +9,8 @@ export class Comm {
     CommInstance = this
   }
 
-  send(message: string) {
-    this.mainWindow.webContents.send('compute-log', message)
+  send(message: string, type: string = "compute-log") {
+    this.mainWindow.webContents.send(type, message)
   }
 
     
