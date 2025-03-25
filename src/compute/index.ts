@@ -7,6 +7,7 @@ import * as LitJsSdk from '@lit-protocol/lit-node-client-nodejs';
 import { Cron } from 'croner';
 
 import { config } from 'dotenv'
+import { startMcpServer } from "./ai/mcpServer";
 config({
   path: process.cwd() + "/../.env.active"
 })
@@ -19,13 +20,17 @@ export let userAddressList: UserList = []
 type UserScheduledJobs = { [cron: string] :  Array<() => Promise<void>>}
 export const scheduledJobs: { [credentialId: string]: UserScheduledJobs } = {} 
 
-const addressToRunFor = [ "0x07BD6d82E20FEC1fA4B66592B46Cba018932aDfA" ]
+const addressToRunFor = [ "0x2aC01FBCd8D7C60CA2bBEF7D348e70C5ec43ea57" ]
 
 async function processTreatmentsForUsers(address: string) {
   CommInstance.send("Initializing Health Agents for user -- " + address)
  
   for (let address of addressToRunFor) {
     try {
+      // start mcp server
+      await startMcpServer()
+      CommInstance.send("Started MCP server")
+
       const pdosRoot = await pdos().modules.auth.getPDOSRoot(address)
       const accessPackage = await pdos().modules.auth.getAccessPackageFromRoot(pdosRoot)
       await pdos().modules.encryption?.setAccessPackage(accessPackage);
@@ -38,9 +43,11 @@ async function processTreatmentsForUsers(address: string) {
         continue
       }
 
+      CommInstance.send("Fetched active treatments for " + address)
       for (let treatment of activeTreatments) {
         const treatmentBinary = await actions.treatments.getTreatmentBinaryForTreatment(treatment)
-        await runTreatmentForUser(address, treatment, treatmentBinary, pdos().tree.root._rawNode.data.expoPushToken)
+        const expoPushToken = pdos().tree.root._rawNode?.data?.expoPushToken ?? undefined
+        await runTreatmentForUser(address, treatment, treatmentBinary, expoPushToken)
       }
     } catch (error) {
       CommInstance.send(`Error processing treatments for ${address}: ${error.message}`)
@@ -57,7 +64,7 @@ export const runCompute = async (mainWindow: any) => {
     env: "marigold",
     context: {
       isComputeNode: true,
-      gatewayURL: "https://network.alpine.healthcare/api"
+      gatewayURL: "http://localhost:8000",
     },
     modules: {
       auth: {
@@ -87,7 +94,7 @@ export const runCompute = async (mainWindow: any) => {
     await processTreatmentsForUsers(address)
   }
 
-  new Cron('*/30 * * * *', processTreatmentsForUsers);
+  //new Cron('*/30 * * * *', processTreatmentsForUsers);
 
 }
 

@@ -9,6 +9,7 @@ window.electron.onComputeLog((response) => {
     const time = document.createElement('p');
     time.style.color = 'green'
     time.style.marginRight = '10px'
+    time.style.minWidth = '200px'
     time.innerText = "[" + new Date().toLocaleDateString() + "-" + new Date().toLocaleTimeString() + "]"
     newLi.appendChild(time);
 

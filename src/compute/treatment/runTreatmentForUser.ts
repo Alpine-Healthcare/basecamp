@@ -35,7 +35,6 @@ const getRequestedData = async (dataRequest: string[]) => {
   const data: { [key: string]: any} = {}
   try {
     for (let dataName of dataRequest) {
-      console.log("dataName", dataName)
       const dataGroupNode = await pdos().tree.userAccount.edges.e_out_DataManifest.getDataGroup(convertSnakeCaseToCamelCase(dataName))
   
       if (dataGroupNode) {
@@ -81,36 +80,36 @@ async function sendPushNotification(expoPushToken: string, title: string, body: 
 }
 
 export const handleBinaryOutput = async (treatmentNode: any, retVal: any, expoPushToken?: string) => {
+
+  console.log("retVal", retVal)
+
   const time = new Date().getSeconds()
-  const shouldClearInbox = time % 2 === 0
-  if (retVal.message) {
-    if (shouldClearInbox) {
-      //await actions.inbox.clear()
-    } else {
-    }
-    let treatmentName = treatmentNode._rawNode.data.treatmentName
+  const treatmentName = treatmentNode._rawNode.data.treatmentName
+
+  /*
+  const shouldClearInbox = true 
+  if (shouldClearInbox) {
     let message = retVal.message
     let action = undefined
 
     if (treatmentName === "FitSense") {
       message = "You're doing great so far today! Try to get an additional 20g of protein in today"
-
     }
 
     if (treatmentName === "Deep Breath Work") {
       action = "Start Interaction"
     }
 
+    await actions.inbox.add(treatmentName, message, action);
+  }*/
 
-      await actions.inbox.add(treatmentNode._rawNode.data.treatmentName, message, action);
-  } else {
-    await actions.inbox.clear()
-  }
-  await treatmentNode.addInstance([retVal.message])
+  const yesterdaysDate = new Date()
+  //await actions.treatments.addEncounter(treatmentName, yesterdaysDate, [retVal.message])
+
   if (expoPushToken && retVal.message) {
     const title = `${treatmentNode._rawNode.data.treatmentName} sent you a message`
     const body = "Tap here to view the interaction"
-    await sendPushNotification(expoPushToken, title, body)
+    //await sendPushNotification(expoPushToken, title, body)
   }
 }
 
@@ -121,7 +120,7 @@ export const runTreatmentForUser = async (
   expoPushToken?: string
 ) => {
   try {
-    CommInstance.send(`[${address}] Compiling and running execution binary`)
+    CommInstance.send(`[${address}] Compiling and running health agent binary`)
 
     const fetchedBinary = await getExecutionBinary(treatmentNode)
     /*eslint no-eval: "error"*/
