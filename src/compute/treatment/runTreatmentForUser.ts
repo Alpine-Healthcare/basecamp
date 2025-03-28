@@ -1,19 +1,22 @@
 import * as ts from "typescript";
 import LLM from "../ai/llm";
 
-import { pdos, actions } from "@alpinehealthcare/pdos";
 import binary_sense from "./binary_sense";
 import binary_breath from "./binary_breath";
 import { CommInstance } from "../../comm";
 import axios from "axios";
+import binary_vibes from "./binary_vibes";
+import { actions } from "@alpinehealthcare/pdos"
 
 const useTestExecutionBinary = true
-const getExecutionBinary = async (therapyBinaryNode: any) => {
+const getExecutionBinary = async (treatmentName: string,therapyBinaryNode: any) => {
   if (useTestExecutionBinary) {
-    if ( therapyBinaryNode._rawNode.data.treatmentName === "Deep Breath Work") {
-      return binary_breath
-    } else {
+    if (treatmentName === "Vibes") {
+      return binary_vibes
+    } else if (treatmentName === "Sense") {
       return binary_sense
+    } else {
+      return binary_breath
     }
   } else {
     const executionBinary = await axios.get("/pdos?return_raw=True&hash=" +therapyBinaryNode._rawNode.execution_binary)
@@ -21,43 +24,6 @@ const getExecutionBinary = async (therapyBinaryNode: any) => {
       throw new Error("No execution binary found")
     }
   }
-}
-
-const convertSnakeCaseToCamelCase = (str: string) =>
-  str
-    .toLowerCase()
-    .replace(/([-_][a-z])/g, (group: string) =>
-      group.toUpperCase().replace("-", "").replace("_", ""),
-    )
-    .replace(/^./, (firstChar) => firstChar.toUpperCase());
-
-const getRequestedData = async (dataRequest: string[]) => {
-  const data: { [key: string]: any} = {}
-  try {
-    for (let dataName of dataRequest) {
-      const dataGroupNode = await pdos().tree.userAccount.edges.e_out_DataManifest.getDataGroup(convertSnakeCaseToCamelCase(dataName))
-  
-      if (dataGroupNode) {
-        data[dataName] = dataGroupNode._rawNode.records
-      }
-    }
-  
-    const requestedDataParsed: any = {}
-  
-    Object.entries(data).map(([key, value]: any) => {
-      requestedDataParsed[key] = Object.entries(value).map(([date, record]) => {
-        return {
-          data: new Date(parseInt(date)),
-          record,
-        }
-      })
-    })
-  } catch (e) {
-    console.log("unable to fetch any data")
-  }
-  
-
-  return data
 }
 
 async function sendPushNotification(expoPushToken: string, title: string, body: string) {
@@ -79,38 +45,42 @@ async function sendPushNotification(expoPushToken: string, title: string, body: 
   });
 }
 
-export const handleBinaryOutput = async (treatmentNode: any, retVal: any, expoPushToken?: string) => {
 
-  console.log("retVal", retVal)
+interface BinaryRetVal {
+  type: string,
+  encounter?: any,
+  message?: string
+}
 
-  const time = new Date().getSeconds()
+export const handleBinaryOutput = async (
+  treatmentNode: any,
+  retVal: BinaryRetVal,
+  expoPushToken?: string
+) => {
+
   const treatmentName = treatmentNode._rawNode.data.treatmentName
+  const encounterDate = new Date()
 
-  /*
-  const shouldClearInbox = true 
-  if (shouldClearInbox) {
-    let message = retVal.message
-    let action = undefined
-
-    if (treatmentName === "FitSense") {
-      message = "You're doing great so far today! Try to get an additional 20g of protein in today"
-    }
-
-    if (treatmentName === "Deep Breath Work") {
-      action = "Start Interaction"
-    }
-
-    await actions.inbox.add(treatmentName, message, action);
-  }*/
-
-  const yesterdaysDate = new Date()
-  //await actions.treatments.addEncounter(treatmentName, yesterdaysDate, [retVal.message])
+  const encounter = await actions.encounters.add(
+    treatmentName,
+    encounterDate,
+    retVal
+  )
+  console.log("encounter", encounter)
+  await actions.inbox.add(
+    treatmentName,
+    encounterDate,
+    { ...retVal, encounterHash: encounter._hash }
+  );
 
   if (expoPushToken && retVal.message) {
+    /*
     const title = `${treatmentNode._rawNode.data.treatmentName} sent you a message`
     const body = "Tap here to view the interaction"
-    //await sendPushNotification(expoPushToken, title, body)
+    await sendPushNotification(expoPushToken, title, body)
+    */
   }
+
 }
 
 export const runTreatmentForUser = async (
@@ -122,18 +92,22 @@ export const runTreatmentForUser = async (
   try {
     CommInstance.send(`[${address}] Compiling and running health agent binary`)
 
-    const fetchedBinary = await getExecutionBinary(treatmentNode)
-    /*eslint no-eval: "error"*/
-    const bin = eval(ts.transpile(fetchedBinary));
+    const fetchedBinary = await getExecutionBinary(treatmentNode._rawNode.data.treatmentName, treatmentNode)
 
-    const dataManifest = treatmentBinary._rawNode.data_manifest
-    const retVal = await bin.main(
-      {
-        llm : new LLM(),
-        data: await getRequestedData(Object.keys(dataManifest)),
-        intake: treatmentNode._rawNode.intake,
-      }
-    );
+    const bin = fetchedBinary
+
+    const llm = new LLM()
+    await llm.addToSystemContext(`The treatment name is: ${treatmentNode._rawNode.data.treatmentName}`)
+
+    const environment = {
+      llm
+    };
+
+    const retVal = await bin.main(environment) as BinaryRetVal | undefined;
+
+    if (!retVal) {
+      return
+    }
 
     await handleBinaryOutput(treatmentNode, retVal, expoPushToken)
 

@@ -23,13 +23,13 @@ export const scheduledJobs: { [credentialId: string]: UserScheduledJobs } = {}
 const addressToRunFor = [ "0x2aC01FBCd8D7C60CA2bBEF7D348e70C5ec43ea57" ]
 
 async function processTreatmentsForUsers(address: string) {
-  CommInstance.send("Initializing Health Agents for user -- " + address)
+  CommInstance.send(`[${address}] Initializing Health Agents for user`)
  
   for (let address of addressToRunFor) {
     try {
       // start mcp server
       await startMcpServer()
-      CommInstance.send("Started MCP server")
+      CommInstance.send(`[${address}] Started MCP server`)
 
       const pdosRoot = await pdos().modules.auth.getPDOSRoot(address)
       const accessPackage = await pdos().modules.auth.getAccessPackageFromRoot(pdosRoot)
@@ -43,7 +43,7 @@ async function processTreatmentsForUsers(address: string) {
         continue
       }
 
-      CommInstance.send("Fetched active treatments for " + address)
+      CommInstance.send(`[${address}] Fetched active treatments`)
       for (let treatment of activeTreatments) {
         const treatmentBinary = await actions.treatments.getTreatmentBinaryForTreatment(treatment)
         const expoPushToken = pdos().tree.root._rawNode?.data?.expoPushToken ?? undefined
@@ -54,7 +54,7 @@ async function processTreatmentsForUsers(address: string) {
     }
   }
   
-  CommInstance.send("Completed scheduled health agents")
+  CommInstance.send(`[${address}] Completed scheduled health agents`)
 }
 
 export const runCompute = async (mainWindow: any) => {

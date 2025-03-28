@@ -1,13 +1,10 @@
-export default `({
-  main: async function({ llm, data, intake }){
-
-    await llm.addSystemContext("Your are a guru who has mastered kriya yoga breathwork. You will guide the user through a kriya yoga breathwork session.")
-    await llm.addMessage("Give an encouraging message before starting the session")
-
-
+export default ({
+  main: async function({ llm }: any){
+    const { value } = await llm.ask("Give a short breathing exercise.")
     return {
-      message: response,
+      type: "BREATH_EXERCISE",
+      message: value
     }
-  } 
-
-})`
+  },
+  
+})

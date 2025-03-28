@@ -1,12 +1,10 @@
-export default `({
-  main: async function({ llm, data, intake }){
-
-    await llm.addSystemContext("You are a health coach that gives advices based on the users health metrics for the given day.")
-    const response = await llm.send("Get the users step_count for today")
-
+export default ({
+  main: async function({ llm }: any){
+    //const { value } = await llm.ask("Tell me some words of encouragement for maintaining physical health, keep it short and sweet.")
     return {
-      message: response,
+      type: "ENCOURAGEMENT",
+      message: "You're doing great! Keep up the good work!"
     }
-  } 
-
-})`
+  },
+  
+})
